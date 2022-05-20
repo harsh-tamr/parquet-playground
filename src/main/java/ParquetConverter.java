@@ -96,6 +96,7 @@ public class ParquetConverter {
     public boolean tryAdvance(Consumer<? super ListMultimap<String, String>> action) {
       if (!init) {
         schema = reader.getFileMetaData().getSchema();
+        System.out.println(schema);
         columnIO = new ColumnIOFactory().getColumnIO(schema);
         groupRecordConverter = new GroupRecordConverter(schema);
         init = true;

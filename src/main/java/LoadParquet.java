@@ -32,13 +32,17 @@ public class LoadParquet {
   public static final GenericData GENERIC_DATA = GenericData.get();
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    final String avroFile = args[0];
-    final String bucket = args[1];
-    final String path = args[2];
+//    final String avroFile = args[0];
+//    final String bucket = args[1];
+//    final String path = args[2];
 //    writeAvroToParquet(avroFile, bucket, path);
 //    readParquet("alltypes_dictionary");
-        readParquet("nested_lists.snappy");
-    //    readParquet("list_columns");
+//        readParquet("nested_lists.snappy");
+//    readParquet("custom2_after_tamr_export");
+//    writeAvroToParquet("/Users/hisingh1/projects/export-parquet/custom.avro","tamr-core-connect-test", "export/custom.parquet");
+//    writeAvroToParquet("/Users/hisingh1/projects/export-parquet/arrays.avro","tamr-core-connect-test", "export/arrays.parquet");
+    writeAvroToParquet("/Users/hisingh1/projects/export-parquet/CUSTOMER_LEGAL_MASTERING_unified_dataset_dedup_published_clusters_with_data.avro","tamr-core-connect-test", "export/CUSTOMER_LEGAL_MASTERING_unified_dataset_dedup_published_clusters_with_data.parquet");
+//    readParquet("arrays");
 
   }
 
@@ -52,7 +56,7 @@ public class LoadParquet {
     DataFileReader<GenericRecord> dataFileReader = new DataFileReader<>(new File(avroFile), DATUM_READER);
 
     final InMemoryOutputFile outputFile = writeToParquet(dataFileReader);
-    final String file = "./yolo.parquet";
+    final String file = "./" + path;
     Files.write(Paths.get(file), outputFile.toArray());
     final AmazonS3 s3 = AmazonS3ClientBuilder.standard().build();
     System.out.println("done writing file");
@@ -71,17 +75,18 @@ public class LoadParquet {
     Schema avroSchema = dataFileReader.getSchema();
     GENERIC_DATA.addLogicalTypeConversion(new TimeConversions.DateConversion());
     InMemoryOutputFile outputFile = new InMemoryOutputFile();
+    Configuration conf = new Configuration();
+    conf.setBoolean("parquet.avro.write-old-list-structure", false);
     try (ParquetWriter<Object> writer = AvroParquetWriter.builder(outputFile)
       .withDataModel(GENERIC_DATA)
       .withSchema(avroSchema)
+      .withConf(conf)
       .withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.CREATE)
       .build()) {
       dataFileReader.iterator().forEachRemaining(r -> {
         try {
-          System.out.println(r);
-          System.out.println(r.get(0));
-          System.out.println(r.get(1));
+//          System.out.println(r);
           writer.write(r);
         } catch (IOException ex) {
           throw new UncheckedIOException(ex);
